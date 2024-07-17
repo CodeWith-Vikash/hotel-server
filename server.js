@@ -8,7 +8,6 @@ const bodyparser=require('body-parser')
 app.use(bodyparser.json())
 
 app.get('/',(req,res)=>{
-    res.send('Welcom to hotel data server')
     res.send('you can use endpoints "/person" and "/menu"')
 })
 
