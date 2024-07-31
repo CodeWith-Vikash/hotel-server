@@ -41,7 +41,7 @@ app.use(passport.initialize())
 const localAuthMiddleware=passport.authenticate('local',{session:false})
 
 app.get('/',(req,res)=>{
-    res.send('Hello world')
+    res.send('you can use endpoints "/person" and "/menu"')
 })
 
 
