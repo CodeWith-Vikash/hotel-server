@@ -1,6 +1,7 @@
 const express= require('express')
 const router=express.Router()
 const person=require('../models/person')
+const {jwtAuthMiddleware,generateToken} = require('../jwt')
 
 
 // saving data to mongodb
@@ -18,7 +19,7 @@ router.post('/',async (req,res)=>{
 })
 
 // getting data from mongodb
-router.get('/',async (req,res)=>{
+router.get('/',jwtAuthMiddleware,async (req,res)=>{
     try{
         let data = await person.find()
         console.log('data fetched')
@@ -78,6 +79,41 @@ router.delete('/:id',async (req,res)=>{
         res.status(200).json(response)
     }catch(err){
         console.log(err)
+        res.status(500).json({error:'internal server error'})
+    }
+})
+
+router.post('/signup',async(req,res)=>{
+    try{
+        const data=req.body
+        const newPerson=person(data)
+        const response= await newPerson.save()
+        console.log('data saved')
+        const token=generateToken(response.username)
+        res.status(200).json({response:response,token:token})
+    }catch(err){
+        console.log(err)
+        res.status(500).json({error:'internal server error'})
+    }
+})
+
+router.post('/login',async(req,res)=>{
+    try {
+        const {username,password}=req.body
+    const user=await person.findOne({username:username})
+
+    if(!user|| !(await user.comparePassword(password))){
+        return res.status(401).json({error:'invalid username or password'})
+    }
+
+    const payload={
+        id:user.id,
+        username:user.username
+    }
+    const token=generateToken(payload)
+    res.json(token)
+    } catch (error) {
+        console.error(error)
         res.status(500).json({error:'internal server error'})
     }
 })
